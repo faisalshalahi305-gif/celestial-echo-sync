@@ -75,7 +75,7 @@ const TPL: Record<string, { name: string; html: string }> = {
   media: { name: "صورة مع شرح", html: `<figure class="grid items-center gap-4 md:grid-cols-2"><img src="${orbits}" alt="صورة" class="w-full rounded-2xl shadow-lg" /><figcaption><p class="text-xl font-bold text-primary">عنوان الصورة</p><p>اكتب شرح الصورة هنا.</p></figcaption></figure>` },
   section: { name: "جدول جديد", html: SEC(`<p>اكتب هنا…</p>`) },
 };
-const BLANK = `<section class="blank mx-auto my-8 max-w-5xl px-6 py-6 md:px-10"><div class="space-y-5 leading-loose min-h-[40vh]"><p>ابدأ من هنا… اكتب أو أضف من تبويب «إضافة».</p></div></section>`;
+const BLANK = `<section class="blank mx-auto my-8 max-w-5xl px-6 py-6 md:px-10"><div class="space-y-5 leading-loose min-h-[40vh]"><p>اكتب / في أي سطر لإضافة عنوان، فقرة، جدول جديد…</p></div></section>`;
 
 type Sel = { block: HTMLElement | null; section: HTMLElement | null; cell: HTMLTableCellElement | null };
 
