@@ -142,3 +142,30 @@
     color: var(--color-foreground);
   }
 }
+
+:root {
+  --background: oklch(0.16 0.045 265);
+  --foreground: oklch(0.95 0.015 240);
+  --card: oklch(0.22 0.06 260);
+  --card-foreground: oklch(0.95 0.015 240);
+  --primary: oklch(0.74 0.13 235);
+  --primary-foreground: oklch(0.16 0.045 265);
+  --accent: oklch(0.3 0.09 255);
+  --accent-foreground: oklch(0.92 0.04 230);
+  --muted: oklch(0.25 0.05 260);
+  --muted-foreground: oklch(0.75 0.04 240);
+  --border: oklch(0.42 0.08 250 / 60%);
+  --success: oklch(0.3 0.08 220);
+  --success-foreground: oklch(0.93 0.05 210);
+}
+@theme inline {
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+}
+body { font-family: "Tajawal", sans-serif; font-size: 20px; }
+summary::-webkit-details-marker { display: none; }
+.editing [contenteditable], .editing { outline: none; }
+.editing *:hover { outline: 1px dashed var(--primary); outline-offset: 2px; }
+.editing img { cursor: pointer; }
+@media print { canvas, button { display: none !important; } details > div { display: block !important; } }
+.editing .is-sel { outline: 2px solid var(--primary) !important; outline-offset: 4px; border-radius: 0.5rem; }
