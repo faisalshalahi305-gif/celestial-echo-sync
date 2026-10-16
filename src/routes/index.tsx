@@ -62,20 +62,20 @@ const SEC = (body: string, title = "عنوان القسم الجديد") => `<se
 
 const TPL: Record<string, { name: string; html: string }> = {
   p: { name: "فقرة", html: `<p>فقرة جديدة… اكتب هنا.</p>` },
+  h2: { name: "عنوان رئيسي", html: `<h2 class="text-4xl font-extrabold text-primary">عنوان رئيسي</h2>` },
   h3: { name: "عنوان فرعي", html: `<h3 class="text-2xl font-bold text-primary">عنوان فرعي</h3>` },
   box: { name: "مربع مميز", html: `<div class="rounded-xl border-2 border-primary bg-accent p-6 text-accent-foreground"><p class="mb-2 text-2xl font-extrabold">عنوان مميز</p><p>معلومة مهمة هنا.</p></div>` },
   alert: { name: "تنبيه", html: `<div class="rounded-xl border-r-8 border-destructive bg-card p-5"><p class="font-extrabold text-destructive">⚠️ تنبيه</p><p>اكتب التنبيه هنا.</p></div>` },
   cards: { name: "بطاقات معلومات", html: `<div class="grid gap-4 md:grid-cols-3"><div class="rounded-xl border border-border bg-card p-5"><p class="text-3xl">🪐</p><p class="font-bold text-primary">بطاقة ١</p><p>معلومة قصيرة.</p></div><div class="rounded-xl border border-border bg-card p-5"><p class="text-3xl">☀️</p><p class="font-bold text-primary">بطاقة ٢</p><p>معلومة قصيرة.</p></div><div class="rounded-xl border border-border bg-card p-5"><p class="text-3xl">🌍</p><p class="font-bold text-primary">بطاقة ٣</p><p>معلومة قصيرة.</p></div></div>` },
   compare: { name: "مقارنة", html: `<div class="grid gap-4 md:grid-cols-2"><div class="rounded-xl border-2 border-primary bg-card p-5"><p class="mb-2 text-xl font-extrabold text-primary">الجانب الأول</p><ul class="list-disc space-y-1 pr-6"><li>نقطة</li><li>نقطة</li></ul></div><div class="rounded-xl border-2 border-border bg-card p-5"><p class="mb-2 text-xl font-extrabold">الجانب الثاني</p><ul class="list-disc space-y-1 pr-6"><li>نقطة</li><li>نقطة</li></ul></div></div>` },
-  table: { name: "جدول", html: `<div class="overflow-x-auto"><table class="w-full border-collapse text-center"><thead><tr><th class="border border-border bg-primary p-3 text-primary-foreground">عمود ١</th><th class="border border-border bg-primary p-3 text-primary-foreground">عمود ٢</th><th class="border border-border bg-primary p-3 text-primary-foreground">عمود ٣</th></tr></thead><tbody><tr><td class="border border-border p-3">—</td><td class="border border-border p-3">—</td><td class="border border-border p-3">—</td></tr><tr><td class="border border-border p-3">—</td><td class="border border-border p-3">—</td><td class="border border-border p-3">—</td></tr></tbody></table></div>` },
   qa: { name: "سؤال وجواب", html: `<details class="qa group rounded-xl border border-border bg-card/80 p-5 shadow-sm"><summary class="flex cursor-pointer list-none flex-wrap items-start justify-between gap-4"><p class="flex-1 font-bold">اكتب السؤال هنا؟</p><span class="shrink-0 rounded-lg bg-primary px-5 py-2 font-bold text-primary-foreground"><span class="group-open:hidden">الإجابة</span><span class="hidden group-open:inline">إخفاء</span></span></summary><div class="mt-4 rounded-lg bg-success p-4 text-success-foreground">اكتب الإجابة هنا.</div></details>` },
   eq: { name: "معادلة", html: `<div dir="ltr" class="my-4 rounded-xl border-2 border-primary bg-accent py-6 text-center font-mono text-3xl font-bold text-accent-foreground">F = m · a</div>` },
   list: { name: "قائمة", html: `<ul class="list-disc space-y-2 pr-6"><li>نقطة أولى</li><li>نقطة ثانية</li></ul>` },
   img: { name: "صورة", html: `<img src="${orbits}" alt="صورة" class="w-full rounded-2xl shadow-lg" />` },
   media: { name: "صورة مع شرح", html: `<figure class="grid items-center gap-4 md:grid-cols-2"><img src="${orbits}" alt="صورة" class="w-full rounded-2xl shadow-lg" /><figcaption><p class="text-xl font-bold text-primary">عنوان الصورة</p><p>اكتب شرح الصورة هنا.</p></figcaption></figure>` },
-  section: { name: "قسم جديد", html: SEC(`<p>اكتب هنا…</p>`) },
+  section: { name: "جدول جديد", html: SEC(`<p>اكتب هنا…</p>`) },
 };
-const BLANK = `<section class="blank mx-auto my-8 max-w-5xl px-6 py-6 md:px-10"><div class="space-y-5 leading-loose min-h-[40vh]"><p>ابدأ من هنا… اكتب أو أضف من تبويب «إضافة».</p></div></section>`;
+const BLANK = `<section class="blank mx-auto my-8 max-w-5xl px-6 py-6 md:px-10"><div class="space-y-5 leading-loose min-h-[40vh]"><p>اكتب / في أي سطر لإضافة عنوان، فقرة، جدول جديد…</p></div></section>`;
 
 type Sel = { block: HTMLElement | null; section: HTMLElement | null; cell: HTMLTableCellElement | null };
 
@@ -171,6 +171,49 @@ function Toolbar({ root, commit, hist, goTo, pickImage, done }: {
     if (k !== "section") select(node);
     commit(`إضافة ${TPL[k]!.name}`);
   };
+  // ---- slash menu ----
+  const [slash, setSlash] = useState<{ q: string; top: number; left: number; line: HTMLElement } | null>(null);
+  const lineOf = () => {
+    const n = getSelection()?.anchorNode;
+    const el = (n?.nodeType === 1 ? n : n?.parentElement) as HTMLElement | null;
+    if (!el || !root.current?.contains(el)) return null;
+    return el.closest("p, h2, h3, li, td, th, summary, figcaption, div") as HTMLElement | null;
+  };
+  useEffect(() => {
+    const r = root.current; if (!r) return;
+    const onInput = () => {
+      const line = lineOf(); const t = line?.textContent?.trim() ?? "";
+      if (!line || !t.startsWith("/")) return setSlash(null);
+      const rc = getSelection()!.getRangeAt(0).getBoundingClientRect(); const lr = line.getBoundingClientRect();
+      setSlash({ q: t.slice(1).trim(), top: (rc.bottom || lr.bottom) + 6, left: Math.max(8, Math.min(rc.left || lr.left, innerWidth - 230)), line });
+    };
+    r.addEventListener("input", onInput);
+    return () => r.removeEventListener("input", onInput);
+  }, [root]);
+  const slashItems = slash ? Object.keys(TPL).filter((k) => TPL[k]!.name.includes(slash.q)) : [];
+  const pickSlash = (k: string) => {
+    if (!slash) return;
+    const { line } = slash; setSlash(null);
+    const t = document.createElement("template"); t.innerHTML = TPL[k]!.html;
+    const node = t.content.firstElementChild as HTMLElement;
+    if (k === "section") { line.textContent = ""; (line.closest("section") ?? main().lastElementChild!).after(node); if (!line.closest("td,th") && line.tagName === "P") line.remove(); }
+    else if (line.matches("td, th, summary, figcaption, li")) { line.innerHTML = ""; line.append(node); }
+    else line.replaceWith(node);
+    const tgt = node.querySelector("p,h2,h3,li,td") as HTMLElement ?? node;
+    const rg = document.createRange(); rg.selectNodeContents(tgt); rg.collapse(false);
+    getSelection()?.removeAllRanges(); getSelection()?.addRange(rg);
+    if (node.tagName === "IMG") pickImage(node as HTMLImageElement);
+    commit(`إضافة ${TPL[k]!.name}`);
+  };
+  useEffect(() => {
+    if (!slash) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setSlash(null);
+      if (e.key === "Enter" && slashItems[0]) { e.preventDefault(); e.stopPropagation(); pickSlash(slashItems[0]); }
+    };
+    document.addEventListener("keydown", onKey, true);
+    return () => document.removeEventListener("keydown", onKey, true);
+  });
   const need = (what: "block" | "section") => {
     const el = last.current[what];
     if (!el || !el.isConnected || el.tagName === "HEADER") { alert("اضغط أولاً داخل العنصر"); return null; }
@@ -276,7 +319,7 @@ function Toolbar({ root, commit, hist, goTo, pickImage, done }: {
             <B t="🗑 القسم" on={() => del("section")} />
           </>}
           {tab === "table" && <>
-            <B t="➕ جدول جديد" on={() => insert("table")} />
+            <B t="➕ جدول جديد" on={() => insert("section")} />
             <B t="➕ صف" on={() => table("row+")} />
             <B t="➖ صف" on={() => table("row-")} />
             <B t="➕ عمود" on={() => table("col+")} />
@@ -303,6 +346,14 @@ function Toolbar({ root, commit, hist, goTo, pickImage, done }: {
           </>}
         </div>
       </div>
+      {slash && slashItems.length > 0 && (
+        <div style={{ top: slash.top, left: slash.left }} className="fixed z-[60] flex max-h-72 w-56 flex-col overflow-y-auto rounded-xl border border-border bg-card p-1 shadow-2xl print:hidden">
+          {slashItems.map((k, i) => (
+            <button key={k} onMouseDown={(e) => e.preventDefault()} onClick={() => pickSlash(k)}
+              className={`rounded-lg px-3 py-2 text-right text-sm font-bold ${i === 0 ? "bg-primary text-primary-foreground" : ""}`}>{TPL[k]!.name}</button>
+          ))}
+        </div>
+      )}
       {pos && (
         <div style={{ top: pos.top, left: pos.left }} className="fixed z-40 flex gap-1 rounded-xl border border-border bg-card p-1 shadow-2xl print:hidden">
           {([["⬆️", () => move(-1, "block"), "تحريك لأعلى"], ["⬇️", () => move(1, "block"), "تحريك لأسفل"], ["📋", () => dup("block"), "تكرار"], ["📄", () => copy("block"), "نسخ"], ["🗑️", () => del("block"), "حذف"]] as const).map(([t, on, l]) => (
