@@ -87,7 +87,7 @@ function shrink(file: File): Promise<string> {
   });
 }
 
-function Pic({ src, onChange }: { src?: string; onChange: (s: string) => void }) {
+function Pic({ src, onChange }: { src?: string | undefined; onChange: (s: string) => void }) {
   const f = useRef<HTMLInputElement>(null);
   return (
     <>
