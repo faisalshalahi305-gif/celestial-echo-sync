@@ -53,7 +53,6 @@ function Lesson() {
     <>
       <Stars />
       <main className="min-h-screen text-foreground">
-    <main className="min-h-screen text-foreground">
       <header className="relative isolate overflow-hidden py-20 text-center text-foreground">
         <img src={cover} width={1920} height={832} alt="المجموعة الشمسية" className="absolute inset-0 -z-10 h-full w-full object-cover" />
         <div className="absolute inset-0 -z-10 bg-gradient-to-b from-background/40 via-background/50 to-background" />
