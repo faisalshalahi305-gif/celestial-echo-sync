@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { supabase } from "@/integrations/supabase/client";
 import { memo, useEffect, useRef, useState, type ReactNode } from "react";
 import cover from "@/assets/space-cover.jpg";
 import orbits from "@/assets/orbits.jpg";
@@ -372,8 +373,16 @@ function Lesson() {
   const [hist, setHistState] = useState<Hist>({ list: [], i: -1 });
   const histRef = useRef(hist);
 
+  const lastSent = useRef<string | null>(null);
   const saveNow = () => {
-    try { if (ref.current) localStorage.setItem(KEY, clean(ref.current.innerHTML)); } catch { alert("المساحة ممتلئة، جرّب صورة أصغر"); }
+    if (!ref.current) return;
+    const html = clean(ref.current.innerHTML);
+    try { localStorage.setItem(KEY, html); } catch { /* ignore */ }
+    if (html === lastSent.current) return;
+    lastSent.current = html;
+    const h = histRef.current;
+    void supabase.from("lesson").upsert({ id: "main", html, history: { list: h.list.slice(-15), i: Math.min(h.i, 14) - Math.max(0, h.list.length - 15) + Math.min(h.list.length, 15) - Math.min(h.list.length, 15) }, updated_at: new Date().toISOString() })
+      .then(({ error }) => { if (error) { lastSent.current = null; alert("تعذّر الحفظ، تأكد من الاتصال"); } });
   };
   const setHist = (v: Hist) => {
     histRef.current = v; setHistState(v);
@@ -402,6 +411,13 @@ function Lesson() {
     const el = ref.current!;
     const saved = localStorage.getItem(KEY);
     if (saved) el.innerHTML = saved;
+    void supabase.from("lesson").select("html").eq("id", "main").maybeSingle().then(({ data }) => {
+      if (data?.html && !editRef.current) { el.innerHTML = data.html; lastSent.current = data.html; try { localStorage.setItem(KEY, data.html); } catch { /* ignore */ } }
+    });
+    const ch = supabase.channel("lesson-main").on("postgres_changes", { event: "*", schema: "public", table: "lesson" }, (p) => {
+      const html = (p.new as { html?: string })?.html;
+      if (html && !editRef.current && html !== lastSent.current) { el.innerHTML = html; lastSent.current = html; }
+    }).subscribe();
     let h: Hist | null = null;
     try { h = JSON.parse(localStorage.getItem(HKEY) || "null"); } catch { /* ignore */ }
     if (h?.list?.length) { histRef.current = h; setHistState(h); }
@@ -428,7 +444,7 @@ function Lesson() {
     addEventListener("beforeunload", onUnload);
     addEventListener("pagehide", onUnload);
     document.addEventListener("visibilitychange", onHide);
-    return () => { el.removeEventListener("click", onClick); el.removeEventListener("input", onInput); removeEventListener("keydown", onKey); removeEventListener("beforeunload", onUnload); removeEventListener("pagehide", onUnload); document.removeEventListener("visibilitychange", onHide); };
+    return () => { void supabase.removeChannel(ch); el.removeEventListener("click", onClick); el.removeEventListener("input", onInput); removeEventListener("keydown", onKey); removeEventListener("beforeunload", onUnload); removeEventListener("pagehide", onUnload); document.removeEventListener("visibilitychange", onHide); };
   }, []);
 
   const toggle = () => {
