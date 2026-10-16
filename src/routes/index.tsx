@@ -299,7 +299,7 @@ function Toolbar({ root, commit, hist, goTo, pickImage, done }: {
             <B t="📂 فتح نسخة" on={restore} />
             <B t="🖨 PDF" on={() => window.print()} />
             <B t="🧹 مسح كل المحتوى" on={clearAll} cls="border-destructive text-destructive" />
-            <B t="الأصل" on={() => { if (confirm("إرجاع الدرس الأصلي؟ (يبقى في السجل)")) { commit("قبل إرجاع الأصل"); localStorage.removeItem(KEY); location.reload(); } }} />
+            <B t="الأصل" on={() => { if (confirm("إرجاع الدرس الأصلي؟ (يبقى في السجل)")) { commit("قبل إرجاع الأصل"); localStorage.removeItem(KEY); void supabase.from("lesson").upsert({ id: "main", html: null }).then(() => location.reload()); } }} />
           </>}
         </div>
       </div>
@@ -380,8 +380,7 @@ function Lesson() {
     try { localStorage.setItem(KEY, html); } catch { /* ignore */ }
     if (html === lastSent.current) return;
     lastSent.current = html;
-    const h = histRef.current;
-    void supabase.from("lesson").upsert({ id: "main", html, history: { list: h.list.slice(-15), i: Math.min(h.i, 14) - Math.max(0, h.list.length - 15) + Math.min(h.list.length, 15) - Math.min(h.list.length, 15) }, updated_at: new Date().toISOString() })
+    void supabase.from("lesson").upsert({ id: "main", html, updated_at: new Date().toISOString() })
       .then(({ error }) => { if (error) { lastSent.current = null; alert("تعذّر الحفظ، تأكد من الاتصال"); } });
   };
   const setHist = (v: Hist) => {
